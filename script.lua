@@ -1,35 +1,32 @@
 --[[
-    HUYMODS ULTIMATE FPS HUB - VERSION 9.0 (RIVALS & SOLARA OPTIMIZED)
-    - New: Target Part Selection (Head, Torso, Nearest Part)
-    - New: Advanced ESP (Health Bar, Names, Boxes)
-    - Fix: Rayfield Dropdown Callback & Solara Stability
-    - Credits: HuyMods
+    HUYMODS ULTIMATE FPS HUB - VERSION 9.1 (FINAL RIVALS & SOLARA)
+    - Full: Input Mode (M1, M2, Both)
+    - Full: Target Part (Head, Torso, Nearest Part)
+    - Full: ESP & FOV System
+    - Optimized: Smoothness & Wall Check
 ]]
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 
--- --- KHỞI TẠO UI (RAYFIELD) ---
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
-    Name = "HuyMods Premium | v9.0 Rivals Edition",
+    Name = "HuyMods Premium | v9.1 Full",
     LoadingTitle = "HUYMODS SYSTEM STARTING...",
-    LoadingSubtitle = "Optimized for Rivals & Solara",
+    LoadingSubtitle = "Input Mode & Target Part Fixed",
     ConfigurationSaving = { Enabled = false }
 })
 
 -- --- CÀI ĐẶT HỆ THỐNG ---
 local Settings = {
-    -- Combat
     AimbotEnabled = false,
-    InputMode = "M2",
-    TargetPart = "Head", -- "Head", "Torso", "Nearest Part"
+    InputMode = "M2", -- M1, M2, Both
+    TargetPart = "Head",
     Smoothness = 0.2,
     FOV = 150,
     ShowFOV = true,
     WallCheck = true,
     TeamCheck = true,
 
-    -- Visuals
     ESPEnabled = false,
     ESPBoxes = false,
     ESPNames = false,
@@ -37,7 +34,6 @@ local Settings = {
     ESPColor = Color3.fromRGB(0, 255, 255),
 }
 
--- --- BIẾN HỆ THỐNG ---
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -45,17 +41,14 @@ local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local ESP_Cache = {}
 
--- Vẽ vòng FOV
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Thickness = 1
 FOVCircle.NumSides = 100
 FOVCircle.Color = Color3.fromRGB(255, 255, 255)
-FOVCircle.Filled = false
 FOVCircle.Visible = false
 
--- --- HÀM TIỆN ÍCH ---
+-- --- HÀM LOGIC ---
 
--- Kiểm tra vật cản (Wall Check)
 local function IsVisible(targetPart)
     if not Settings.WallCheck then return true end
     local params = RaycastParams.new()
@@ -65,13 +58,10 @@ local function IsVisible(targetPart)
     return result == nil or result.Instance:IsDescendantOf(targetPart.Parent)
 end
 
--- Tìm bộ phận gần tâm chuột nhất trên một đối thủ
 local function GetNearestPart(character)
     local nearest = nil
     local minDistance = math.huge
     local mousePos = UserInputService:GetMouseLocation()
-    
-    -- Danh sách các bộ phận Rivals thường có
     local bodyParts = {"Head", "UpperTorso", "LowerTorso", "HumanoidRootPart"}
     
     for _, name in pairs(bodyParts) do
@@ -90,7 +80,6 @@ local function GetNearestPart(character)
     return nearest
 end
 
--- Khởi tạo ESP
 local function CreateESP(player)
     if player == LocalPlayer then return end
     local function Setup()
@@ -98,25 +87,31 @@ local function CreateESP(player)
         ESP_Cache[player] = {
             Box = Drawing.new("Square"),
             Name = Drawing.new("Text"),
-            HealthOutline = Drawing.new("Line"),
-            HealthBar = Drawing.new("Line"),
-            Tracer = Drawing.new("Line")
+            HealthBar = Drawing.new("Line")
         }
         local d = ESP_Cache[player]
         d.Box.Thickness = 1.5
         d.Name.Size = 14; d.Name.Center = true; d.Name.Outline = true
-        d.HealthBar.Thickness = 2
     end
     player.CharacterAdded:Connect(Setup)
     if player.Character then Setup() end
 end
 
--- --- GIAO DIỆN UI ---
+-- --- UI TABS ---
 local AimTab = Window:CreateTab("Combat", 4483362458)
 local VisualTab = Window:CreateTab("Visuals", 4483345998)
 
--- TAB COMBAT
-AimTab:CreateToggle({Name = "Kích hoạt Aimbot", CurrentValue = false, Callback = function(v) Settings.AimbotEnabled = v end})
+-- COMBAT TAB
+AimTab:CreateToggle({Name = "Bật Aimbot", CurrentValue = false, Callback = function(v) Settings.AimbotEnabled = v end})
+
+AimTab:CreateDropdown({
+    Name = "Phím kích hoạt (Input Mode)",
+    Options = {"M1", "M2", "Both"},
+    CurrentOption = "M2",
+    Callback = function(v) 
+        Settings.InputMode = type(v) == "table" and v[1] or v 
+    end
+})
 
 AimTab:CreateDropdown({
     Name = "Vùng ngắm (Target Part)",
@@ -127,30 +122,21 @@ AimTab:CreateDropdown({
     end
 })
 
-AimTab:CreateSlider({
-    Name = "Độ mượt (Smoothness)", 
-    Range = {0.05, 1}, 
-    Increment = 0.05, 
-    CurrentValue = 0.2, 
-    Callback = function(v) Settings.Smoothness = v end
-})
-
-AimTab:CreateToggle({Name = "Hiện FOV", CurrentValue = true, Callback = function(v) Settings.ShowFOV = v end})
+AimTab:CreateSlider({Name = "Độ mượt (Smoothness)", Range = {0.05, 1}, Increment = 0.05, CurrentValue = 0.2, Callback = function(v) Settings.Smoothness = v end})
 AimTab:CreateSlider({Name = "Bán kính FOV", Range = {30, 800}, Increment = 10, CurrentValue = 150, Callback = function(v) Settings.FOV = v end})
+AimTab:CreateToggle({Name = "Hiện FOV", CurrentValue = true, Callback = function(v) Settings.ShowFOV = v end})
 AimTab:CreateToggle({Name = "Kiểm tra tường", CurrentValue = true, Callback = function(v) Settings.WallCheck = v end})
-AimTab:CreateToggle({Name = "Kiểm tra Team", CurrentValue = true, Callback = function(v) Settings.TeamCheck = v end})
 
--- TAB VISUALS
+-- VISUALS TAB
 VisualTab:CreateToggle({Name = "Kích hoạt ESP", CurrentValue = false, Callback = function(v) Settings.ESPEnabled = v end})
 VisualTab:CreateToggle({Name = "Hiện Box", CurrentValue = false, Callback = function(v) Settings.ESPBoxes = v end})
 VisualTab:CreateToggle({Name = "Hiện Tên", CurrentValue = false, Callback = function(v) Settings.ESPNames = v end})
 VisualTab:CreateToggle({Name = "Hiện Máu", CurrentValue = false, Callback = function(v) Settings.ESPHealth = v end})
 VisualTab:CreateColorPicker({Name = "Màu ESP", Color = Settings.ESPColor, Callback = function(v) Settings.ESPColor = v end})
 
--- --- VÒNG LẶP CHÍNH ---
+-- --- MAIN LOOP ---
 RunService.RenderStepped:Connect(function()
     local mousePos = UserInputService:GetMouseLocation()
-    
     FOVCircle.Visible = Settings.AimbotEnabled and Settings.ShowFOV
     FOVCircle.Radius = Settings.FOV
     FOVCircle.Position = mousePos
@@ -169,30 +155,31 @@ RunService.RenderStepped:Connect(function()
             if hrp and hum and hum.Health > 0 then
                 local pos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
                 
-                -- Xử lý hiển thị ESP
+                -- ESP
                 if Settings.ESPEnabled and onScreen and not isTeam then
                     local sizeX, sizeY = 2000/pos.Z, 3000/pos.Z
                     local boxPos = Vector2.new(pos.X - sizeX/2, pos.Y - sizeY/2)
 
-                    if Settings.ESPBoxes then
-                        d.Box.Visible = true; d.Box.Size = Vector2.new(sizeX, sizeY); d.Box.Position = boxPos; d.Box.Color = Settings.ESPColor
-                    else d.Box.Visible = false end
+                    d.Box.Visible = Settings.ESPBoxes
+                    d.Box.Size = Vector2.new(sizeX, sizeY)
+                    d.Box.Position = boxPos
+                    d.Box.Color = Settings.ESPColor
 
-                    if Settings.ESPNames then
-                        d.Name.Visible = true; d.Name.Text = player.Name; d.Name.Position = Vector2.new(pos.X, boxPos.Y - 15); d.Name.Color = Color3.fromRGB(255,255,255)
-                    else d.Name.Visible = false end
+                    d.Name.Visible = Settings.ESPNames
+                    d.Name.Text = player.Name
+                    d.Name.Position = Vector2.new(pos.X, boxPos.Y - 15)
 
                     if Settings.ESPHealth then
                         d.HealthBar.Visible = true
                         d.HealthBar.From = Vector2.new(boxPos.X - 5, boxPos.Y + sizeY)
                         d.HealthBar.To = Vector2.new(boxPos.X - 5, boxPos.Y + sizeY - (sizeY * (hum.Health/hum.MaxHealth)))
-                        d.HealthBar.Color = Color3.fromRGB(0, 255, 0)
+                        d.HealthBar.Color = Color3.fromRGB(255 - (255 * (hum.Health/100)), 255 * (hum.Health/100), 0)
                     else d.HealthBar.Visible = false end
                 else
                     d.Box.Visible = false; d.Name.Visible = false; d.HealthBar.Visible = false
                 end
 
-                -- Xử lý quét mục tiêu Aimbot
+                -- Aimbot Target Scan
                 if onScreen and not isTeam then
                     local target
                     if Settings.TargetPart == "Head" then
@@ -218,22 +205,23 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Thực thi nhắm (Aimbot)
+    -- Thực thi Aimbot dựa trên InputMode
     if closestPart and Settings.AimbotEnabled then
-        local isAiming = UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2)
+        local m1 = UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
+        local m2 = UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2)
+        
+        local isAiming = false
+        if Settings.InputMode == "M1" then isAiming = m1
+        elseif Settings.InputMode == "M2" then isAiming = m2
+        elseif Settings.InputMode == "Both" then isAiming = (m1 or m2) end
+
         if isAiming then
-            local targetCF = CFrame.new(Camera.CFrame.Position, closestPart.Position)
-            Camera.CFrame = Camera.CFrame:Lerp(targetCF, Settings.Smoothness)
+            Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, closestPart.Position), Settings.Smoothness)
         end
     end
 end)
 
--- Khởi chạy hệ thống
 for _, p in pairs(Players:GetPlayers()) do CreateESP(p) end
 Players.PlayerAdded:Connect(CreateESP)
 
-Rayfield:Notify({
-    Title = "HuyMods v9.0 Loaded",
-    Content = "Target Part & Nearest Part logic active!",
-    Duration = 5
-})
+Rayfield:Notify({Title = "HuyMods v9.1 Loaded", Content = "M1/M2 Input & Nearest Part Active!", Duration = 5})

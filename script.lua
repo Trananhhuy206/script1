@@ -1,8 +1,12 @@
 --[[ 
-    SOLARA PRO FPS HUB v7.1 - FULL DEEP ENCRYPTION
+    SOLARA PRO FPS HUB v7.1 - PRIVATE EDITION
+    DEVELOPED SOLELY BY: HuyMods
     LOGIC: COMBAT, VISUALS, HITBOX, BYPASS
-    STATUS: PROTECTED 
+    STATUS: PROTECTED & ENCRYPTED
 ]]--
+
+local AUTHOR = "HuyMods"
+local VERSION = "v7.1"
 
 local _0xO1 = {
     "\108\111\111\107\115\116\114\105\110\103", -- loadstring
@@ -25,11 +29,21 @@ local _0xST = {
     _EE=false, _EB=false, _EN=false, _EH=false, _ET=false, _EC=Color3.fromRGB(255,0,0)
 }
 
+-- [WATERMARK]
+local WM = Drawing.new("Text")
+WM.Text = AUTHOR .. " - Solara " .. VERSION .. " | Running"
+WM.Size = 18; WM.Outline = true; WM.Center = false; WM.Visible = true;
+WM.Color = Color3.fromRGB(255, 255, 255); WM.Position = Vector2.new(30, 30);
+
 local _0xFC = Drawing.new("\67\105\114\99\108\101");
 _0xFC.Thickness=1; _0xFC.NumSides=60; _0xFC.Color=Color3.fromRGB(255,255,255); _0xFC.Visible=false;
 
 local _0xRF = _0xL(_0xG.HttpGet(_0xG, _0xO1[2]))();
-local _0xWN = _0xRF:CreateWindow({Name="Solara Ultimate v7.1", LoadingTitle="Shielding Logic...", ConfigurationSaving={Enabled=false}})
+local _0xWN = _0xRF:CreateWindow({
+    Name = "Solara Hub | " .. AUTHOR, 
+    LoadingTitle = "Auth: " .. AUTHOR .. " Private Logic...", 
+    ConfigurationSaving = {Enabled = false}
+})
 
 -- [HELPER MODULES]
 local function _0xGTP(_0xCH)
@@ -55,24 +69,24 @@ local function _0xMESP(_0xPL)
 end
 
 -- [UI TABS]
-local _0xT1 = _0xWN:CreateTab("\67\111\109\98\97\116")
-_0xT1:CreateToggle({Name="Enable Aim", CurrentValue=false, Callback=function(v)_0xST._A=v end})
+local _0xT1 = _0xWN:CreateTab("Aim Assist")
+_0xT1:CreateToggle({Name="Enable Auto-Lock", CurrentValue=false, Callback=function(v)_0xST._A=v end})
 _0xT1:CreateToggle({Name="Team Check", CurrentValue=true, Callback=function(v)_0xST._TC=v end})
-_0xT1:CreateSlider({Name="Smoothness", Range={0.01,1}, Increment=0.05, CurrentValue=0.4, Callback=function(v)_0xST._SM=v end})
-_0xT1:CreateSlider({Name="FOV", Range={30,800}, Increment=10, CurrentValue=150, Callback=function(v)_0xST._F=v end})
-_0xT1:CreateDropdown({Name="Target", Options={"Head","Torso","Random"}, CurrentOption="Head", Callback=function(v)_0xST._TP=v end})
-_0xT1:CreateToggle({Name="Show FOV", CurrentValue=true, Callback=function(v)_0xST._SF=v end})
+_0xT1:CreateSlider({Name="Smoothing", Range={0.01,1}, Increment=0.05, CurrentValue=0.4, Callback=function(v)_0xST._SM=v end})
+_0xT1:CreateSlider({Name="FOV Radius", Range={30,800}, Increment=10, CurrentValue=150, Callback=function(v)_0xST._F=v end})
+_0xT1:CreateDropdown({Name="Target Part", Options={"Head","Torso","Random"}, CurrentOption="Head", Callback=function(v)_0xST._TP=v end})
+_0xT1:CreateToggle({Name="Display FOV", CurrentValue=true, Callback=function(v)_0xST._SF=v end})
 
-local _0xT2 = _0xWN:CreateTab("\86\105\115\117\97\108\115")
-_0xT2:CreateToggle({Name="ESP Master", CurrentValue=false, Callback=function(v)_0xST._EE=v end})
-_0xT2:CreateToggle({Name="Box", CurrentValue=false, Callback=function(v)_0xST._EB=v end})
-_0xT2:CreateToggle({Name="Names", CurrentValue=false, Callback=function(v)_0xST._EN=v end})
-_0xT2:CreateToggle({Name="Health", CurrentValue=false, Callback=function(v)_0xST._EH=v end})
-_0xT2:CreateToggle({Name="Tracers", CurrentValue=false, Callback=function(v)_0xST._ET=v end})
+local _0xT2 = _0xWN:CreateTab("Sensory ESP")
+_0xT2:CreateToggle({Name="Master Switch", CurrentValue=false, Callback=function(v)_0xST._EE=v end})
+_0xT2:CreateToggle({Name="Bounding Box", CurrentValue=false, Callback=function(v)_0xST._EB=v end})
+_0xT2:CreateToggle({Name="Identity Tags", CurrentValue=false, Callback=function(v)_0xST._EN=v end})
+_0xT2:CreateToggle({Name="Vitals Monitor", CurrentValue=false, Callback=function(v)_0xST._EH=v end})
+_0xT2:CreateToggle({Name="Distance Tracers", CurrentValue=false, Callback=function(v)_0xST._ET=v end})
 
-local _0xT3 = _0xWN:CreateTab("\72\105\116\98\111\120")
-_0xT3:CreateToggle({Name="Enable Hitbox", CurrentValue=false, Callback=function(v)_0xST._HE=v end})
-_0xT3:CreateSlider({Name="Size", Range={2,30}, Increment=1, CurrentValue=12, Callback=function(v)_0xST._HS=v end})
+local _0xT3 = _0xWN:CreateTab("Modifications")
+_0xT3:CreateToggle({Name="Hitbox Expander", CurrentValue=false, Callback=function(v)_0xST._HE=v end})
+_0xT3:CreateSlider({Name="Extender Size", Range={2,30}, Increment=1, CurrentValue=12, Callback=function(v)_0xST._HS=v end})
 
 -- [MAIN RUNNER]
 _0xR.RenderStepped:Connect(function()
@@ -101,7 +115,8 @@ _0xR.RenderStepped:Connect(function()
                     if _0xVIS_ESP then
                         local sx, sy = 2000/_0xVP.Z, 3000/_0xVP.Z
                         d.B.Size=Vector2.new(sx,sy); d.B.Position=Vector2.new(_0xVP.X-sx/2, _0xVP.Y-sy/2); d.B.Color=_0xST._EC
-                        d.N.Text=_0xPL.Name.." ["..math.floor(_0xVP.Z).."m]"; d.N.Position=Vector2.new(_0xVP.X, _0xVP.Y+sy/2+5)
+                        d.N.Text=string.format("%s • [%dM]", _0xPL.Name, math.floor(_0xVP.Z))
+                        d.N.Position=Vector2.new(_0xVP.X, _0xVP.Y+sy/2+5)
                         if _0xST._EH then
                             local h = _0xHM.Health/_0xHM.MaxHealth
                             d.HO.Visible=true; d.HO.From=Vector2.new(_0xVP.X-sx/2-5, _0xVP.Y+sy/2); d.HO.To=Vector2.new(_0xVP.X-sx/2-5, _0xVP.Y-sy/2)
@@ -111,7 +126,7 @@ _0xR.RenderStepped:Connect(function()
                     else d.B.Visible=false; d.N.Visible=false; d.HO.Visible=false; d.HB.Visible=false; d.T.Visible=false end
                 end
 
-                -- Aimbot Target Selection
+                -- Target Selection
                 if _0xOS and not _0xIT then
                     local _0xDI = (Vector2.new(_0xVP.X, _0xVP.Y)-_0xMP).Magnitude
                     if _0xDI < _0xSD then
@@ -130,4 +145,9 @@ end)
 
 for _, p in pairs(_0xP:GetPlayers()) do _0xMESP(p) end
 _0xP.PlayerAdded:Connect(_0xMESP);
-_0xRF:Notify({Title="ENCRYPTED", Content="All functions active and masked."});
+
+_0xRF:Notify({
+    Title = AUTHOR .. " HUB ACTIVATED", 
+    Content = "All logic modules secured. Dev: " .. AUTHOR,
+    Duration = 5
+});

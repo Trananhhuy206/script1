@@ -1,31 +1,29 @@
 --[[
-    HUYMODS ULTIMATE FPS HUB - VERSION 9.1 (FINAL RIVALS & SOLARA)
-    - Full: Input Mode (M1, M2, Both)
-    - Full: Target Part (Head, Torso, Nearest Part)
-    - Full: ESP & FOV System
-    - Optimized: Smoothness & Wall Check
+    HUYMODS ULTIMATE FPS HUB - VERSION 9.2
+    - Added: Team Check Toggle in UI
+    - Fixed: Team Check logic for Aimbot & ESP
 ]]
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
-    Name = "HuyMods Premium | v9.1 Full",
+    Name = "HuyMods Premium | v9.2 Team Fix",
     LoadingTitle = "HUYMODS SYSTEM STARTING...",
-    LoadingSubtitle = "Input Mode & Target Part Fixed",
+    LoadingSubtitle = "Team Check Toggle Added",
     ConfigurationSaving = { Enabled = false }
 })
 
 -- --- CÀI ĐẶT HỆ THỐNG ---
 local Settings = {
     AimbotEnabled = false,
-    InputMode = "M2", -- M1, M2, Both
+    InputMode = "M2",
     TargetPart = "Head",
     Smoothness = 0.2,
     FOV = 150,
     ShowFOV = true,
     WallCheck = true,
-    TeamCheck = true,
+    TeamCheck = true, -- Mặc định là bật
 
     ESPEnabled = false,
     ESPBoxes = false,
@@ -103,26 +101,24 @@ local VisualTab = Window:CreateTab("Visuals", 4483345998)
 
 -- COMBAT TAB
 AimTab:CreateToggle({Name = "Bật Aimbot", CurrentValue = false, Callback = function(v) Settings.AimbotEnabled = v end})
+-- NÚT TEAM CHECK BẠN CẦN ĐÂY:
+AimTab:CreateToggle({Name = "Team Check (Bỏ qua đồng đội)", CurrentValue = true, Callback = function(v) Settings.TeamCheck = v end})
 
 AimTab:CreateDropdown({
     Name = "Phím kích hoạt (Input Mode)",
     Options = {"M1", "M2", "Both"},
     CurrentOption = "M2",
-    Callback = function(v) 
-        Settings.InputMode = type(v) == "table" and v[1] or v 
-    end
+    Callback = function(v) Settings.InputMode = type(v) == "table" and v[1] or v end
 })
 
 AimTab:CreateDropdown({
     Name = "Vùng ngắm (Target Part)",
     Options = {"Head", "Torso", "Nearest Part"},
     CurrentOption = "Head",
-    Callback = function(v) 
-        Settings.TargetPart = type(v) == "table" and v[1] or v 
-    end
+    Callback = function(v) Settings.TargetPart = type(v) == "table" and v[1] or v end
 })
 
-AimTab:CreateSlider({Name = "Độ mượt (Smoothness)", Range = {0.05, 1}, Increment = 0.05, CurrentValue = 0.2, Callback = function(v) Settings.Smoothness = v end})
+AimTab:CreateSlider({Name = "Độ mượt", Range = {0.05, 1}, Increment = 0.05, CurrentValue = 0.2, Callback = function(v) Settings.Smoothness = v end})
 AimTab:CreateSlider({Name = "Bán kính FOV", Range = {30, 800}, Increment = 10, CurrentValue = 150, Callback = function(v) Settings.FOV = v end})
 AimTab:CreateToggle({Name = "Hiện FOV", CurrentValue = true, Callback = function(v) Settings.ShowFOV = v end})
 AimTab:CreateToggle({Name = "Kiểm tra tường", CurrentValue = true, Callback = function(v) Settings.WallCheck = v end})
@@ -150,12 +146,17 @@ RunService.RenderStepped:Connect(function()
             local char = player.Character
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
             local hum = char and char:FindFirstChild("Humanoid")
-            local isTeam = Settings.TeamCheck and player.Team == LocalPlayer.Team
+            
+            -- Logic Team Check linh hoạt
+            local isTeam = false
+            if Settings.TeamCheck then
+                isTeam = (player.Team == LocalPlayer.Team)
+            end
 
             if hrp and hum and hum.Health > 0 then
                 local pos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
                 
-                -- ESP
+                -- ESP hiển thị dựa trên TeamCheck
                 if Settings.ESPEnabled and onScreen and not isTeam then
                     local sizeX, sizeY = 2000/pos.Z, 3000/pos.Z
                     local boxPos = Vector2.new(pos.X - sizeX/2, pos.Y - sizeY/2)
@@ -179,7 +180,7 @@ RunService.RenderStepped:Connect(function()
                     d.Box.Visible = false; d.Name.Visible = false; d.HealthBar.Visible = false
                 end
 
-                -- Aimbot Target Scan
+                -- Aimbot Target Scan dựa trên TeamCheck
                 if onScreen and not isTeam then
                     local target
                     if Settings.TargetPart == "Head" then
@@ -205,7 +206,6 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Thực thi Aimbot dựa trên InputMode
     if closestPart and Settings.AimbotEnabled then
         local m1 = UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
         local m2 = UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2)
@@ -224,4 +224,4 @@ end)
 for _, p in pairs(Players:GetPlayers()) do CreateESP(p) end
 Players.PlayerAdded:Connect(CreateESP)
 
-Rayfield:Notify({Title = "HuyMods v9.1 Loaded", Content = "M1/M2 Input & Nearest Part Active!", Duration = 5})
+Rayfield:Notify({Title = "HuyMods v9.2 Loaded", Content = "Team Check Toggle Fixed!", Duration = 5})
